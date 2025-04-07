@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneSphere - Stream the Sound</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6200ea;
+        }
+        
+        .logo span {
+            color: #ff3d00;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-item {
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-item:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #6200ea;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-item:hover:after {
+            width: 100%;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/api/placeholder/1200/600');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            color: white;
+            margin-top: 80px;
+        }
+        
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        /* Filter Section */
+        .filters-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: -30px auto 40px;
+            position: relative;
+            z-index: 10;
+            max-width: 1000px;
+        }
+        
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 150px;
+            font-size: 14px;
+        }
+        
+        .search-bar {
+            display: flex;
+            flex-grow: 1;
+            min-width: 200px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #ddd;
+            border-right: none;
+            font-size: 14px;
+        }
+        
+        .search-button {
+            background-color: #6200ea;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+        }
+        
+        .sort-options {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sort-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Music Grid */
+        .music-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .music-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .music-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .music-image {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+            position: relative;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .music-card:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .play-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .music-info {
+            padding: 20px;
+        }
+        
+        .music-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .music-artist {
+            color: #666;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .music-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .music-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .like-button {
+            color: #ff3d00;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .like-button:hover {
+            transform: scale(1.2);
+        }
+        
+        .music-views {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .music-type {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0 80px;
+            gap: 5px;
+        }
+        
+        .page-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .page-item.active {
+            background-color: #6200ea;
+            color: white;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+        }
+        
+        .empty-icon {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-message {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #212121;
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section {
+            width: 30%;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-title {
+            margin-bottom: 20px;
+            font-size: 18px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-title:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #ff3d00;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background-color: #6200ea;
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        
+        .badge-language {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-bar {
+                order: -1;
+                margin-bottom: 10px;
+            }
+            
+            .footer-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="#" class="logo">Tune<span>Sphere</span></a>
+                <nav class="nav-links">
+                    <a href="#" class="nav-item">Home</a>
+                    <a href="#" class="nav-item">Browse</a>
+                    <a href="#" class="nav-item">Playlists</a>
+                    <a href="#" class="nav-item">About</a>
+                    <a href="#" class="nav-item">Contact</a>
+                </nav>
+                <button class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content animate">
+                <h1>Discover Your Sound</h1>
+                <p>Stream thousands of tracks across all genres and find your next favorite song.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Section -->
+    <div class="container">
+        <div class="filters-section animate">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <select class="filter-select" id="language-filter">
+                        <option value="">All Languages</option>
+                        <option value="english">English</option>
+                        <option value="spanish">Spanish</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="french">French</option>
+                        <option value="korean">Korean</option>
+                    </select>
+                    <select class="filter-select" id="type-filter">
+                        <option value="">All Types</option>
+                        <option value="pop">Pop</option>
+                        <option value="rock">Rock</option>
+                        <option value="hiphop">Hip Hop</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="rnb">R&B</option>
+                        <option value="classical">Classical</option>
+                    </select>
+                    <select class="filter-select" id="artist-filter">
+                        <option value="">All Artists</option>
+                        <option value="artist1">The Weeknd</option>
+                        <option value="artist2">Taylor Swift</option>
+                        <option value="artist3">Drake</option>
+                        <option value="artist4">Ariana Grande</option>
+                        <option value="artist5">Coldplay</option>
+                    </select>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search for songs, artists...">
+                    <button class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="sort-options">
+                    <span class="sort-label">Sort by:</span>
+                    <select class="filter-select" id="sort-filter">
+                        <option value="popular">Most Popular</option>
+                        <option value="recent">Most Recent</option>
+                        <option value="likes">Most Liked</option>
+                        <option value="az">A-Z</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music Grid -->
+        <div class="music-container">
+            <!-- Music Card 1 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Pop</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Blinding Lights</h3>
+                    <p class="music-artist">The Weeknd</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>4.2K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>1.2M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 2 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Rock</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Viva La Vida</h3>
+                    <p class="music-artist">Coldplay</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>3.8K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>980K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 3 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Hip Hop</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">God's Plan</h3>
+                    <p class="music-artist">Drake</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>5.1K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>2.3M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 4 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Pop</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">positions</h3>
+                    <p class="music-artist">Ariana Grande</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>3.2K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>1.5M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 5 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Pop</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Anti-Hero</h3>
+                    <p class="music-artist">Taylor Swift</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>6.7K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>3.1M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 6 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Electronic</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Starboy</h3>
+                    <p class="music-artist">The Weeknd</p>
+                    <span class="badge badge-language">English</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>4.9K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>2.7M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 7 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">R&B</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Despacito</h3>
+                    <p class="music-artist">Luis Fonsi</p>
+                    <span class="badge badge-language">Spanish</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>7.3K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>4.8M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Card 8 -->
+            <div class="music-card animate">
+                <div class="music-image" style="background-image: url('/api/placeholder/250/200');">
+                    <div class="play-overlay">
+                        <div class="play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="music-type">Classical</div>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">Moonlight Sonata</h3>
+                    <p class="music-artist">Ludwig van Beethoven</p>
+                    <span class="badge badge-language">Instrumental</span>
+                    <div class="music-meta">
+                        <div class="music-rating">
+                            <i class="fas fa-heart like-button"></i>
+                            <span>2.5K</span>
+                        </div>
+                        <div class="music-views">
+                            <i class="fas fa-eye"></i>
+                            <span>780K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            <div class="page-item active">1</div>
+            <div class="page-item">2</div>
+            <div class="page-item">3</div>
+            <div class="page-item">4</div>
+            <div class="page-item">5</div>
+            <div class="page-item">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">About TuneSphere</h3>
+                    <p>TuneSphere is your go-to platform for discovering and streaming music from artists all around the world. Our mission is to connect listeners with the sounds they love.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Browse Music</a></li>
+                        <li><a href="#">Top Charts</a></li>
+                        <li><a href="#">New Releases</a></li>
+                        <li><a href="#">Playlists</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                &copy; 2025 TuneSphere. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple theme toggle functionality
+        const themeToggle = document.querySelector('.theme-toggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+        
+        // Like button functionality
+        const likeButtons = document.querySelectorAll('.like-button');
+        
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('liked');
+                
+                if (this.classList.contains('liked')) {
+                    this.style.color = '#ff3d00';
+                    const count = this.nextElementSibling;
+                    count.textContent = (parseFloat(count.textContent) + 0.1).toFixed(1) + 'K';
+                } else {
+                    this.style.color = '';
+                    const count = this.nextElementSibling;
+                    count.textContent = (parseFloat(count.textContent) - 0.1).toFixed(1) + 'K';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

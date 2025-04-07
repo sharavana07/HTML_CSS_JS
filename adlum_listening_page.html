@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneSphere - Stream the Sound</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6200ea;
+        }
+        
+        .logo span {
+            color: #ff3d00;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-item {
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-item:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #6200ea;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-item:hover:after {
+            width: 100%;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-top: 100px;
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .page-description {
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 18px;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            background-color: white;
+            font-size: 16px;
+            min-width: 150px;
+        }
+        
+        /* Album Grid */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .album-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .album-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .album-image {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .album-info {
+            padding: 20px;
+        }
+        
+        .album-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .album-artist {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .album-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .album-rating {
+            color: #ff3d00;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .album-profit {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Album Details Expanded */
+        .album-details {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            background-color: #f9f9f9;
+        }
+        
+        .album-details.active {
+            padding: 20px;
+            max-height: 500px;
+            margin-top: 10px;
+        }
+        
+        .song-list {
+            list-style: none;
+        }
+        
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .song-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .song-number {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #6200ea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .play-button {
+            color: #6200ea;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 40px 0;
+        }
+        
+        .page-link {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .page-link:hover, .page-link.active {
+            background-color: #6200ea;
+            color: white;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background-color: #212121;
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section {
+            width: 30%;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-title {
+            margin-bottom: 20px;
+            font-size: 18px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-title:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #ff3d00;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background-color: #6200ea;
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+            }
+            
+            .footer-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">Tune<span>Sphere</span></div>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-item">Home</a>
+                    <a href="music.html" class="nav-item">Music</a>
+                    <a href="albums.html" class="nav-item">Albums</a>
+                    <a href="profile.html" class="nav-item">Profile</a>
+                </div>
+                <button class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Page Header -->
+        <section class="page-header">
+            <h1 class="page-title">Discover Albums</h1>
+            <p class="page-description">Explore our collection of top-rated albums from various artists and genres</p>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="search-box">
+                <input type="text" placeholder="Search albums...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="filter-controls">
+                <select class="filter-select">
+                    <option value="">All Genres</option>
+                    <option value="pop">Pop</option>
+                    <option value="rock">Rock</option>
+                    <option value="hiphop">Hip Hop</option>
+                    <option value="classical">Classical</option>
+                    <option value="jazz">Jazz</option>
+                </select>
+                <select class="filter-select">
+                    <option value="newest">Newest</option>
+                    <option value="rating">Highest Rating</option>
+                    <option value="profit">Highest Profit</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Album Grid -->
+        <section class="album-grid">
+            <!-- Album Card 1 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Midnight Symphony</h3>
+                    <p class="album-artist">By Taylor Swift</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8/5</span>
+                        </div>
+                        <div class="album-profit">$1.2M</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album1-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>Midnight Glow</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Stars in Your Eyes</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Dream Sequence</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Album Card 2 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Electric Horizons</h3>
+                    <p class="album-artist">By The Weeknd</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.6/5</span>
+                        </div>
+                        <div class="album-profit">$950K</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album2-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>Digital Dreams</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Electric Soul</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Neon Lights</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Album Card 3 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Ocean Memories</h3>
+                    <p class="album-artist">By Billie Eilish</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.7/5</span>
+                        </div>
+                        <div class="album-profit">$1.1M</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album3-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>Deep Blue</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Ocean Whispers</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Salt & Waves</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Album Card 4 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Desert Mirage</h3>
+                    <p class="album-artist">By Ed Sheeran</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.5/5</span>
+                        </div>
+                        <div class="album-profit">$980K</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album4-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>Sand Castles</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Mirage</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Desert Sun</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Album Card 5 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Urban Jungle</h3>
+                    <p class="album-artist">By Drake</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.9/5</span>
+                        </div>
+                        <div class="album-profit">$1.5M</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album5-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>City Lights</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Concrete Jungle</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Metro Beat</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Album Card 6 -->
+            <div class="album-card">
+                <img src="/api/placeholder/400/320" alt="Album Cover" class="album-image">
+                <div class="album-info">
+                    <h3 class="album-title">Cosmic Journey</h3>
+                    <p class="album-artist">By Dua Lipa</p>
+                    <div class="album-meta">
+                        <div class="album-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.7/5</span>
+                        </div>
+                        <div class="album-profit">$1.3M</div>
+                    </div>
+                </div>
+                <div class="album-details" id="album6-details">
+                    <ul class="song-list">
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">1</span>
+                                <span>Starlight</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">2</span>
+                                <span>Galaxy Eyes</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                        <li class="song-item">
+                            <div class="song-info">
+                                <span class="song-number">3</span>
+                                <span>Astral Plane</span>
+                            </div>
+                            <span class="play-button"><i class="fas fa-play"></i></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link">4</a>
+            <a href="#" class="page-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">About TuneSphere</h3>
+                    <p>TuneSphere is a music streaming platform that connects artists with fans through high-quality audio content.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-spotify"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Useful Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> 1234 Music Street, City</li>
+                        <li><i class="fas fa-phone"></i> +1 (123) 456-7890</li>
+                        <li><i class="fas fa-envelope"></i> contact@tunesphere.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 TuneSphere. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle album details
+        document.querySelectorAll('.album-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const details = this.querySelector('.album-details');
+                
+                // Close all other expanded details
+                document.querySelectorAll('.album-details.active').forEach(active => {
+                    if (active !== details) {
+                        active.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current details
+                details.classList.toggle('active');
+            });
+        });
+        
+        // Theme toggle functionality
+        const themeToggle = document.querySelector('.theme-toggle');
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-moon')) {
+                icon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                icon.classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+    </script>
+</body>
+</html>
